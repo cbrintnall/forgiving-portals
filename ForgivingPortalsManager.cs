@@ -51,8 +51,6 @@ namespace ForgivingPortals
 
     public static void SyncTeleportationState(List<ItemDrop.ItemData> items)
     {
-      var logger = BepInEx.Logging.Logger.CreateLogSource("Patch");
-
       foreach(var item in items)
       {
         if (TinCopperTeleportUnlocked && TinCopperItems.Contains(item.m_shared.m_name))
@@ -70,6 +68,40 @@ namespace ForgivingPortals
           item.m_shared.m_teleportable = true;
         }
       }
+    }
+
+    /// <summary>
+    /// Checks an item to see if it qualifies for unlocking a teleportation
+    /// tier.
+    /// </summary>
+    /// <param name="item">The item to be examined</param>
+    /// <returns>If anything was unlocked</returns>
+    public static bool CheckForUnlocks(ItemDrop.ItemData item)
+    {
+      string name = item.m_shared.m_name;
+
+      if (!TinCopperTeleportUnlocked && name == "$item_iron")
+      {
+        TinCopperTeleportUnlocked = true;
+        Log.LogInfo("Unlocked tin / copper / bronze teleporting.");
+        return true;
+      }
+
+      if (!IronTeleportUnlocked && name == "$item_silver")
+      {
+        IronTeleportUnlocked = true;
+        Log.LogInfo("Unlocked iron teleporting.");
+        return true;
+      }
+
+      if (!SilverTeleportUnlocked && name == "$item_blackmetal")
+      {
+        SilverTeleportUnlocked = true;
+        Log.LogInfo("Unlocked silver teleporting.");
+        return true;
+      }
+
+      return false;
     }
   }
 }

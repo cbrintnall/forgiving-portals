@@ -1,9 +1,4 @@
-﻿using BepInEx;
-using BepInEx.Logging;
-using HarmonyLib;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
+﻿using HarmonyLib;
 
 namespace ForgivingPortals.Patches
 {
@@ -12,25 +7,24 @@ namespace ForgivingPortals.Patches
   {
     private static void Postfix(Player __instance, ItemDrop.ItemData item)
     {
-      string name = item.m_shared.m_name;
+      ForgivingPortalsManager.CheckForUnlocks(item);
+    }
+  }
 
-      if (name == "$item_iron")
+  [HarmonyPatch(typeof(Container), "CheckForChanges")]
+  public static class SyncContainerPatch
+  {
+    private static void Postfix(Container __instance)
+    {
+      Inventory inventory = Traverse.Create(__instance).Field("m_inventory").GetValue<Inventory>();
+      var items = inventory.GetAllItems();
+
+      foreach (var item in items)
       {
-        ForgivingPortalsManager.TinCopperTeleportUnlocked = true;
-        ForgivingPortalsManager.Log.LogInfo("Unlocked tin / copper / bronze teleporting.");
+        ForgivingPortalsManager.CheckForUnlocks(item);
       }
 
-      if (name == "$item_silver")
-      {
-        ForgivingPortalsManager.IronTeleportUnlocked = true;
-        ForgivingPortalsManager.Log.LogInfo("Unlocked iron teleporting.");
-      }
-
-      if (name == "$item_blackmetal")
-      {
-        ForgivingPortalsManager.SilverTeleportUnlocked = true;
-        ForgivingPortalsManager.Log.LogInfo("Unlocked silver teleporting.");
-      }
+      ForgivingPortalsManager.SyncTeleportationState(items);
     }
   }
 }
